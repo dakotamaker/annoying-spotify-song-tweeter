@@ -7,6 +7,7 @@ const fs = require('fs');
 const Twitter = require('twitter');
 const twitterHandle = process.env.TWITTER_HANDLE || 'DakotaMaker';
 const spotifyRedirectURI = 'https://annoying-spotify-link-tweeter.herokuapp.com/oauth/redirect'
+const port = process.env.PORT || '8080'
 
 let twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY || 'LBEhCeWDWZciGZ7O2DB4mDHkJ',
@@ -45,7 +46,9 @@ function start() {
         _setAutoRefresh(refreshToken, auth);
     });
 
-    http.listen(8080);
+    http.listen(port, function () {
+        console.log(`Example app listening on port !`);
+    });
 }
 
 function getCurrentSongAndTweet(token) {
