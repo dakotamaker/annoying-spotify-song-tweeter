@@ -33,8 +33,6 @@ function start() {
     });
 
     app.get('/oauth/redirect', (req, res) => {
-        res.render(`${public}/index.html`);
-
         let accessCode = req.query.code;
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET || 'cbc813b7fa2f4ffba1bec511b4822901';
         let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
@@ -50,6 +48,7 @@ function start() {
         let refreshToken = response.refresh_token;
         getCurrentSongAndTweet(accessToken);
         _setAutoRefresh(refreshToken, auth);
+        res.render(`${public}/index.html`);
     });
 
     http.listen(port, function () {
