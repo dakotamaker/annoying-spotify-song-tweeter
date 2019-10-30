@@ -8,6 +8,7 @@ const Twitter = require('twitter');
 const twitterHandle = process.env.TWITTER_HANDLE || 'DakotaMaker';
 const spotifyRedirectURI = 'https://annoying-spotify-link-tweeter.herokuapp.com/oauth/redirect'
 const port = process.env.PORT || '8080'
+const public = __dirname + '/public/';
 
 let twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY || 'LBEhCeWDWZciGZ7O2DB4mDHkJ',
@@ -20,6 +21,9 @@ function start() {
     let clientID = process.env.SPOTIFY_CLIENT_ID || '7ae78bbf106f4b0dab41c09d7b1f28c8';
     let redirectURI = encodeURIComponent(spotifyRedirectURI);
 
+    app.use(express.static('public'));
+    app.engine('html', require('ejs').renderFile);
+
     app.get('/', (req, res) => {
         let scope = encodeURIComponent('user-read-currently-playing');
         let urlParams = `client_id=${clientID}&redirect_uri=${redirectURI}&scope=${scope}&response_type=code`
@@ -29,6 +33,8 @@ function start() {
     });
 
     app.get('/oauth/redirect', (req, res) => {
+        res.render(`${public}/index.html`);
+
         let accessCode = req.query.code;
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET || 'cbc813b7fa2f4ffba1bec511b4822901';
         let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
