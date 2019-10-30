@@ -5,20 +5,20 @@ const http = require('http').createServer(app);
 const request = require('sync-request');
 const fs = require('fs');
 const Twitter = require('twitter');
-const twitterHandle = process.env.TWITTER_HANDLE || 'DakotaMaker';
+const twitterHandle = process.env.TWITTER_HANDLE;
 const spotifyRedirectURI = 'https://annoying-spotify-link-tweeter.herokuapp.com/oauth/redirect'
 const port = process.env.PORT || '8080'
 const public = __dirname + '/public/';
 
 let twitterClient = new Twitter({
-    consumer_key: process.env.TWITTER_CONSUMER_KEY || 'LBEhCeWDWZciGZ7O2DB4mDHkJ',
-    consumer_secret: process.env.TWITTER_CONSUMER_SECRET || 'zJyRu8VRm7ZM0qFfe804szSm1NorwnanC8YK8mJwsZ77AESfRN',
-    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY || 'lcA9H5TNWNQzAmYjJV4IU7ydpfgDHjXhp8Wz7hNw',
-    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET || 'HhnSIMSxIxXHTvmaM7Sv0VJKiw9XJltyhLdt1iIPCeXz8'
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 })
 
 function start() {
-    let clientID = process.env.SPOTIFY_CLIENT_ID || '7ae78bbf106f4b0dab41c09d7b1f28c8';
+    let clientID = process.env.SPOTIFY_CLIENT_ID;
     let redirectURI = encodeURIComponent(spotifyRedirectURI);
 
     app.use(express.static('public'));
@@ -34,7 +34,7 @@ function start() {
 
     app.get('/oauth/redirect', (req, res) => {
         let accessCode = req.query.code;
-        let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET || 'cbc813b7fa2f4ffba1bec511b4822901';
+        let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET;
         let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
 
         let authCodeCurl = `curl -H "Authorization: Basic ${auth}" ` +
@@ -52,7 +52,7 @@ function start() {
     });
 
     http.listen(port, function () {
-        console.log(`Example app listening on port !`);
+        console.log(`Example app listening on port ${port}!`);
     });
 }
 
@@ -75,10 +75,8 @@ function getCurrentSongAndTweet(token) {
         
         if(fs.existsSync('songDetails.json')) {
             let fileSong = JSON.parse(fs.readFileSync('songDetails.json'))
-            // console.log('Going to tweet!')
             if((fileSong.link === currentSongDetails.link && fileSong.songProgressMS < currentSongDetails.songProgressMS) || fileSong.link !== currentSongDetails.link) {
                 _tweetSong(currentSongDetails)
-                // console.log('Tweet!')
             }
 
             fs.writeFileSync('songDetails.json', JSON.stringify(currentSongDetails), (err) => {
