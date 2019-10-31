@@ -1,6 +1,8 @@
 # Annoying Spotify Link Tweeter
 Well, I'm not sure why you'd ever want to use this. Hell, I don't even want to. But in all seriousness, this is a tool to take in Spotify and Twitter credentials to tweet out what you are listening to on Spotify every 36 seconds (100 times an hour).
 
+*Disclaimer:* This was kind of a mess-around project. This will not regularly be updated probably.
+
 ## Requirements
 * Spotify developer app for client key and ID
     * Important to note that whatever URL you are using for this will need to be registered as a redirect URI in the Spotify dev dashboard

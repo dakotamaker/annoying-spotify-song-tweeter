@@ -7,9 +7,8 @@ const fs = require('fs');
 const Twitter = require('twitter');
 const twitterHandle = process.env.TWITTER_HANDLE;
 const port = process.env.PORT || '8080'
-// const public = __dirname + '/public/';
 const myIP = require('ip').address();
-const spotifyRedirectURI = `http://${myIP}:8080/oauth`
+const spotifyRedirectURI = `http://${myIP}:${port}/oauth`
 
 let twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -21,9 +20,6 @@ let twitterClient = new Twitter({
 function start() {
     let clientID = process.env.SPOTIFY_CLIENT_ID;
     let redirectURI = encodeURIComponent(spotifyRedirectURI);
-
-    // app.use(express.static('public'));
-    // app.engine('html', require('ejs').renderFile);
 
     app.get('/', (req, res) => {
         let scope = encodeURIComponent('user-read-currently-playing');
@@ -38,7 +34,9 @@ function start() {
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET;
         let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
 
-        let authCodeCurl = `curl -H "Authorization: Basic ${auth}" ` +
+        let authCodeCurl = `curl -X POST ` +
+                        `-d client_id=${clientID} ` +
+                        `-d client_secret=${clientSecretKey} ` +
                         '-d grant_type=authorization_code ' +
                         `-d code=${accessCode} ` +
                         `-d redirect_uri=${redirectURI} ` +
@@ -52,8 +50,7 @@ function start() {
             let refreshToken = response.refresh_token;
             getCurrentSongAndTweet(accessToken, refreshToken, auth);
             _setAutoRefresh(refreshToken, auth);
-    }
-        // res.render(`${public}/index.html`);
+        }
     });
 
     http.listen(port, function () {
@@ -67,7 +64,7 @@ function getCurrentSongAndTweet(token, refresh_token, auth) {
             Authorization: `Bearer ${token}`
         }
     });
-    if(response.body !== []) {
+    if(response.body.toString() !== '') {
         let body = JSON.parse(response.body);
         if (response.statusCode === 200 && body.currently_playing_type === 'track') {
             let currentSongDetails = {
