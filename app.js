@@ -6,9 +6,10 @@ const request = require('sync-request');
 const fs = require('fs');
 const Twitter = require('twitter');
 const twitterHandle = process.env.TWITTER_HANDLE;
-const spotifyRedirectURI = 'https://annoying-spotify-link-tweeter.herokuapp.com/oauth/redirect'
 const port = process.env.PORT || '8080'
-const public = __dirname + '/public/';
+// const public = __dirname + '/public/';
+const myIP = require('ip').address();
+const spotifyRedirectURI = `http://${myIP}:8080/oauth`
 
 let twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -21,8 +22,8 @@ function start() {
     let clientID = process.env.SPOTIFY_CLIENT_ID;
     let redirectURI = encodeURIComponent(spotifyRedirectURI);
 
-    app.use(express.static('public'));
-    app.engine('html', require('ejs').renderFile);
+    // app.use(express.static('public'));
+    // app.engine('html', require('ejs').renderFile);
 
     app.get('/', (req, res) => {
         let scope = encodeURIComponent('user-read-currently-playing');
@@ -32,7 +33,7 @@ function start() {
         res.redirect(url);
     });
 
-    app.get('/oauth/redirect', (req, res) => {
+    app.get('/oauth', (req, res) => {
         let accessCode = req.query.code;
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET;
         let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
@@ -43,48 +44,58 @@ function start() {
                         `-d redirect_uri=${redirectURI} ` +
                         'https://accounts.spotify.com/api/token';
         let response = JSON.parse(_execSyncWithRetry(authCodeCurl, 3))
-
-        let accessToken = response.access_token;
-        let refreshToken = response.refresh_token;
-        getCurrentSongAndTweet(accessToken);
-        _setAutoRefresh(refreshToken, auth);
-        res.render(`${public}/index.html`);
+        if(response.error) {
+            console.log(response.error_description)
+        }
+        else {
+            let accessToken = response.access_token;
+            let refreshToken = response.refresh_token;
+            getCurrentSongAndTweet(accessToken, refreshToken, auth);
+            _setAutoRefresh(refreshToken, auth);
+    }
+        // res.render(`${public}/index.html`);
     });
 
     http.listen(port, function () {
-        console.log(`Example app listening on port ${port}!`);
+        console.log(`Listening on port ${port}!`);
     });
 }
 
-function getCurrentSongAndTweet(token) {
+function getCurrentSongAndTweet(token, refresh_token, auth) {
     let response = request('GET', 'https://api.spotify.com/v1/me/player/currently-playing', {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
-    let body = JSON.parse(response.body);
-
-    if (response.statusCode === 200 && body.currently_playing_type === 'track') {
-        let currentSongDetails = {
-            songTitle: body.item.name,
-            songArtists: _stringifyListOfArtists(body.item.artists.map(x=>x.name)),
-            songAlbum: body.item.album.name,
-            link: body.item.external_urls.spotify,
-            songProgressMS: body.progress_ms
-        }
-        
-        if(fs.existsSync('songDetails.json')) {
-            let fileSong = JSON.parse(fs.readFileSync('songDetails.json'))
-            if((fileSong.link === currentSongDetails.link && fileSong.songProgressMS < currentSongDetails.songProgressMS) || fileSong.link !== currentSongDetails.link) {
-                _tweetSong(currentSongDetails)
+    if(response.body !== []) {
+        let body = JSON.parse(response.body);
+        if (response.statusCode === 200 && body.currently_playing_type === 'track') {
+            let currentSongDetails = {
+                songTitle: body.item.name,
+                songArtists: _stringifyListOfArtists(body.item.artists.map(x=>x.name)),
+                songAlbum: body.item.album.name,
+                link: body.item.external_urls.spotify,
+                songProgressMS: body.progress_ms
             }
 
-            fs.writeFileSync('songDetails.json', JSON.stringify(currentSongDetails), (err) => {
-                if(err) {
-                    console.err(err);
+            console.log(currentSongDetails);
+            
+            if(fs.existsSync('songDetails.json')) {
+                let fileSong = JSON.parse(fs.readFileSync('songDetails.json'))
+                if((fileSong.link === currentSongDetails.link && fileSong.songProgressMS < currentSongDetails.songProgressMS) || fileSong.link !== currentSongDetails.link) {
+                    _tweetSong(currentSongDetails)
                 }
-            });
-        } 
+            } else {
+                fs.writeFileSync('songDetails.json', JSON.stringify(currentSongDetails), (err) => {
+                    if(err) {
+                        console.log(err);
+                    }
+                }); 
+                _tweetSong(currentSongDetails);
+            }
+        }
+    } else {
+        console.log('Not listening, will try again')
     }
 }
 
@@ -96,7 +107,7 @@ function _tweetSong(currentSongDetails) {
     let tweetOptions = Object.assign(fs.existsSync('lastTweetID.json') ? {in_reply_to_status_id: JSON.parse(fs.readFileSync('lastTweetID.json')).id } : {}, statusOption)
     twitterClient.post('statuses/update', tweetOptions, function(err, data) {
         if(err) {
-            console.err(err)
+            console.log(err)
         } else {
             fs.writeFileSync('lastTweetID.json', JSON.stringify({id: data.id_str}));
         }
