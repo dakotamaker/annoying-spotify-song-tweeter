@@ -23,4 +23,4 @@ Well, I'm not sure why you'd ever want to use this. Hell, I don't even want to. 
     - _[Optional]_ `PORT`: port to run your app on, otherwise it will default to 8080
 2. Run `npm i` to install all dependencies
 3. Run `npm start` and navigate to `<your URL>:<port>` in your browser.
-4. Leave open and annoy your Twitter followers to no end. Refresh tokens will be genrated so there is no need to do anything after that
+4. Leave open and annoy your Twitter followers to no end. Refresh tokens will be generated so there is no need to do anything after that.

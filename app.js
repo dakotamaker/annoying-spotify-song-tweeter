@@ -32,7 +32,6 @@ function start() {
     app.get('/oauth', (req, res) => {
         let accessCode = req.query.code;
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET;
-        let auth = Buffer.from(`${clientID}:${clientSecretKey}`).toString('base64')
 
         let authCodeCurl = `curl -X POST ` +
                         `-d client_id=${clientID} ` +
@@ -48,8 +47,8 @@ function start() {
         else {
             let accessToken = response.access_token;
             let refreshToken = response.refresh_token;
-            getCurrentSongAndTweet(accessToken, refreshToken, auth);
-            _setAutoRefresh(refreshToken, auth);
+            getCurrentSongAndTweet(accessToken, refreshToken, clientID, clientSecretKey);
+            _setAutoRefresh(refreshToken, clientID, clientSecretKey);
         }
     });
 
@@ -58,7 +57,7 @@ function start() {
     });
 }
 
-function getCurrentSongAndTweet(token, refresh_token, auth) {
+function getCurrentSongAndTweet(token, refresh_token, clientID, clientSecretKey) {
     let response = request('GET', 'https://api.spotify.com/v1/me/player/currently-playing', {
         headers: {
             Authorization: `Bearer ${token}`
@@ -92,7 +91,8 @@ function getCurrentSongAndTweet(token, refresh_token, auth) {
             }
         }
     } else {
-        console.log('Not listening, will try again')
+        console.log('Not listening, will try again');
+        _setAutoRefresh(refresh_token, clientID, clientSecretKey);
     }
 }
 
@@ -111,9 +111,11 @@ function _tweetSong(currentSongDetails) {
     });
 }
 
-function _setAutoRefresh(refreshToken, auth) {
+function _setAutoRefresh(refreshToken, clientID, clientSecretKey) {
     setInterval(()=>{
-        let refreshTokenCurl = `curl -H "Authorization: Basic ${auth}" ` +
+        let refreshTokenCurl = 'curl -X POST ' +
+                        `-d client_id=${clientID} ` +
+                        `-d client_secret=${clientSecretKey} ` +
                         '-d grant_type=refresh_token ' +
                         `-d refresh_token=${refreshToken} ` +
                         'https://accounts.spotify.com/api/token';
