@@ -13,7 +13,6 @@ Well, I'm not sure why you'd ever want to use this. Hell, I don't even want to. 
 
 ## Running
 1. Set env variables:
-    - `TWITTER_HANDLE`: Your Twitter '@ name' or handle associated with your developer account
     - `TWITTER_CONSUMER_KEY`: Twitter consumer key from Twitter developer app
     - `TWITTER_CONSUMER_SECRET`: Twitter consumer secret from Twitter developer app
     - `TWITTER_ACCESS_TOKEN_KEY`: Twitter access token key from Twitter developer app
