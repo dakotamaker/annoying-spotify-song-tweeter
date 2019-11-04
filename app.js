@@ -8,6 +8,7 @@ const Twitter = require('twitter');
 const port = process.env.PORT || '8080';
 const myIP = require('ip').address();
 const spotifyRedirectURI = `http://${myIP}:${port}/oauth`;
+let firstInterval = true;
 
 let twitterClient = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -32,6 +33,9 @@ function start() {
         let accessCode = req.query.code;
         let clientSecretKey = process.env.SPOTIFY_CLIENT_SECRET;
 
+        console.log(clientID);
+        console.log(redirectURI);
+
         let authCodeCurl = `curl -X POST ` +
                         `-d client_id=${clientID} ` +
                         `-d client_secret=${clientSecretKey} ` +
@@ -40,6 +44,7 @@ function start() {
                         `-d redirect_uri=${redirectURI} ` +
                         'https://accounts.spotify.com/api/token';
         let response = JSON.parse(_execSyncWithRetry(authCodeCurl, 3));
+        console.log(response)
         if(response.error) {
             console.log(response.error_description);
         }
@@ -47,7 +52,7 @@ function start() {
             let accessToken = response.access_token;
             let refreshToken = response.refresh_token;
             getCurrentSongAndTweet(accessToken, refreshToken, clientID, clientSecretKey);
-            _setAutoRefresh(refreshToken, clientID, clientSecretKey);
+            res.sendStatus(200);
         }
     });
 
@@ -90,6 +95,10 @@ function getCurrentSongAndTweet(token, refresh_token, clientID, clientSecretKey)
         }
     } else {
         console.log('Not listening, will try again');
+    }
+
+    if(firstInterval) {
+        firstInterval = false;
         _setAutoRefresh(refresh_token, clientID, clientSecretKey);
     }
 }
