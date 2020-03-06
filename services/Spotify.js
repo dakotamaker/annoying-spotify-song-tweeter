@@ -3,8 +3,8 @@ const myIP = require('ip').address();
 const request = require('sync-request');
 const spotifyRedirectURI = `http://${myIP}:8080/oauth`;
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const CLIENT_ID = '7ae78bbf106f4b0dab41c09d7b1f28c8';
+const CLIENT_SECRET = '9cd9f7277fd04170901b0a2f7d228d8c';
 const execSync = require('child_process').execSync;
 
 
@@ -82,14 +82,12 @@ class Spotify {
             }
         });
 
-        if(response.statusCode !== 204) {
+        if(response.statusCode === 200) {
             let body = JSON.parse(response.body);
-            if (response.statusCode === 200) {
-                if(body.currently_playing_type === 'track') {
-                    return _returnAppropriateSongObject(body);
-                } else if(body.currently_playing_type === 'episode') {
-                    return {podcast: true};
-                }
+            if(body.currently_playing_type === 'track') {
+                return _returnAppropriateSongObject(body);
+            } else if(body.currently_playing_type === 'episode') {
+                return {podcast: true};
             }
         } else {
             console.log('Not listening, will try again in 36 seconds.');

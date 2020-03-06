@@ -20,17 +20,17 @@ class Twitter {
 
         console.log(status)
 
-        twitterClient.post('statuses/update', {status: status}, function(err, data) {
-            if(err) {
-                console.error(err);
-            } else {
-                fs.writeFileSync('songDetails.json', JSON.stringify(songOrPodcastDetails), (err) => {
-                    if(err) {
-                        console.log(err);
-                    }
-                });
-            }
-        });
+        // twitterClient.post('statuses/update', {status: status}, function(err, data) {
+        //     if(err) {
+        //         console.error(err);
+        //     } else {
+        //         fs.writeFileSync('songDetails.json', JSON.stringify(songOrPodcastDetails), (err) => {
+        //             if(err) {
+        //                 console.log(err);
+        //             }
+        //         });
+        //     }
+        // });
     }
 }
 
