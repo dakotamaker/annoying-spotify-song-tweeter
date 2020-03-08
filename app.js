@@ -57,7 +57,7 @@ function start() {
                 Twitter.tweet(songOrPodcastDetails);
             }
         }
-    }, 7 * 1000);
+    }, 36 * 1000);
 }
 
 start();
