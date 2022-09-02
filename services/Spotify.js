@@ -1,7 +1,6 @@
 const fs = require('fs');
-const myIP = require('ip').address();
 const request = require('sync-request');
-const spotifyRedirectURI = `http://${myIP}:8080/oauth`;
+const spotifyRedirectURI = `https://warm-everglades-92524.herokuapp.com/oauth`;
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
