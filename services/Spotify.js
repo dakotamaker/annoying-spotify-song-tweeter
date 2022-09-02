@@ -3,8 +3,8 @@ const myIP = require('ip').address();
 const request = require('sync-request');
 const spotifyRedirectURI = `http://${myIP}:8080/oauth`;
 
-const CLIENT_ID = '7ae78bbf106f4b0dab41c09d7b1f28c8';
-const CLIENT_SECRET = '9cd9f7277fd04170901b0a2f7d228d8c';
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const execSync = require('child_process').execSync;
 
 
@@ -35,7 +35,7 @@ const _returnAppropriateSongObject = function(body) {
     } else {
         fs.writeFileSync('songDetails.json', JSON.stringify(currentSongDetails), (err) => {
             if(err) {
-                console.error(err);
+                console.error("Error writing to details", err);
             }
         });
     }
@@ -71,11 +71,10 @@ class Spotify {
     getRedirectUrl() {
         let scope = encodeURIComponent('user-read-currently-playing');
         let urlParams = `client_id=${CLIENT_ID}&redirect_uri=${spotifyRedirectURI}&scope=${scope}&response_type=code`;
-        let url = `https://accounts.spotify.com/authorize?${urlParams}`;
-        return url;
+        return `https://accounts.spotify.com/authorize?${urlParams}`;
     }
 
-    getCurrentSong(accessToken) {
+     getCurrentSong(accessToken) {
         let response = request('GET', 'https://api.spotify.com/v1/me/player/currently-playing', {
             headers: {
                 Authorization: `Bearer ${accessToken}`

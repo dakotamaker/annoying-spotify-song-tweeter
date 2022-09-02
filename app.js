@@ -27,7 +27,7 @@ function start() {
             songOrPodcastDetails = Spotify.getCurrentSong(accessToken);
             if(songOrPodcastDetails) {
                 Twitter.tweet(songOrPodcastDetails);
-            }        
+            }       
             firstInterval = false;
         }
 
@@ -45,7 +45,7 @@ function start() {
     
     setInterval(() => {
         if(!firstInterval) {
-            refreshSpotifyAuth = Spotify.refreshAuth(refreshToken);
+            let refreshSpotifyAuth = Spotify.refreshAuth(refreshToken);
             accessToken = refreshSpotifyAuth.access_token;
         }
     }, 3400 * 1000);
